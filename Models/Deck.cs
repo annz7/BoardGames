@@ -34,8 +34,13 @@ namespace GameBox.Models
         {
             for(var i = 0; i < Cards.Count; i++)
             {
-                Cards[i].MoveToIndex(this, new Random().Next(0, Cards.Count));
+                MoveToIndex(Cards[i], new Random().Next(0, Cards.Count));
             }
+        }
+        public void MoveToIndex(Card card, int index)
+        {
+            Cards.Remove(card);
+            Cards.Insert(index, card);
         }
 
         internal void CreateDeck()

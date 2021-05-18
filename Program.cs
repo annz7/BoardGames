@@ -1,6 +1,4 @@
-﻿/*ToDo: взять карту со стола, положить на стол, положить в колоду, посмотреть карты на столе*/
-
-using System;
+﻿using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Runtime.InteropServices;
@@ -21,32 +19,32 @@ namespace GameBoxConsole
     public class ConsoleCommands
     {
         public static void NewGame(Board board)
-        {    
+        {
             ConsoleSettings();
 
             board = CreateBoard();
 
-            string[] menu = 
-            { 
-                "Взять карту", 
-                "Положить карту", 
-                "Посмотреть на предметы", 
-                "Сменить игрока", 
+            string[] menu =
+            {
+                "Взять карту",
+                "Положить карту",
+                "Посмотреть на предметы",
+                "Сменить игрока",
                 "Бросить кубики",
-                "Перемешать колоду", 
-                "Новая игра", 
+                "Перемешать колоду",
+                "Новая игра",
                 "Закончить и выйти из игры"
             };
 
             var menuActions = new GameActions[]
             {
-                TakeCard, 
-                PutCard, 
-                See, 
-                ChangeArm, 
-                TrowDice, 
-                ShuffleDeck, 
-                NewGame, 
+                TakeCard,
+                PutCard,
+                See,
+                ChangeArm,
+                TrowDice,
+                ShuffleDeck,
+                NewGame,
                 GameOver
             };
 
@@ -62,91 +60,91 @@ namespace GameBoxConsole
 
         private static void ChooseActionAndDoIt(ref int position, ref bool check, IReadOnlyList<string> menu, IReadOnlyList<GameActions> menuActions, Board board)
         {
-           var q = Console.ReadKey();
+            var q = Console.ReadKey();
 
-           switch (q.Key)
-           {
-               case ConsoleKey.UpArrow when position != 0:
-                   position--;
-                   break;
-               case ConsoleKey.DownArrow when position != menu.Count - 1:
-                   position++;
-                   break;
-               case ConsoleKey.Enter:
-                   DoAction(menu[position], menuActions[position], board, ref check);
-                   break;
-           }
+            switch (q.Key)
+            {
+                case ConsoleKey.UpArrow when position != 0:
+                    position--;
+                    break;
+                case ConsoleKey.DownArrow when position != menu.Count - 1:
+                    position++;
+                    break;
+                case ConsoleKey.Enter:
+                    DoAction(menu[position], menuActions[position], board, ref check);
+                    break;
+            }
         }
 
         private static void DoAction(string actionName, GameActions action, Board board, ref bool check)
         {
-           Console.Clear();
-           Console.WriteLine(actionName + ": \n");
-           Thread.Sleep(1000);
-           action(board);
+            Console.Clear();
+            Console.WriteLine(actionName + ": \n");
+            Thread.Sleep(1000);
+            action(board);
 
-           if (actionName == "Новая игра" || actionName == "Закончить и выйти из игры")
-           {
-               check = false;
-               return;
-           }
+            if (actionName == "Новая игра" || actionName == "Закончить и выйти из игры")
+            {
+                check = false;
+                return;
+            }
 
-           WaitForKey();
+            WaitForKey();
         }
 
 
         private static void WaitForKey()
         {
-           Console.WriteLine("Для продолжения нажмите любую клавишу.\n");
-           Console.ReadKey();
-           Console.Clear();
+            Console.WriteLine("Для продолжения нажмите любую клавишу.\n");
+            Console.ReadKey();
+            Console.Clear();
         }
 
         private static void GameOver(Board board)
         {
-           Console.Clear();
-           Console.WriteLine("Пока((\n");
+            Console.Clear();
+            Console.WriteLine("Пока((\n");
         }
 
         private static void ShuffleDeck(Board board)
         {
-           var decks = board.GetItems<Deck>();
-           Console.Clear();
-           Console.WriteLine("Какую колоду?");
-           Thread.Sleep(1000);
-           var deck = ChooseDeck(decks);
-           Actions.ShuffleDeck(deck);
+            var decks = board.GetItems<Deck>();
+            Console.Clear();
+            Console.WriteLine("Какую колоду?");
+            Thread.Sleep(1000);
+            var deck = ChooseDeck(decks);
+            Actions.ShuffleDeck(deck);
 
-           Console.Clear();
-           Console.WriteLine("Колода перемешана");
+            Console.Clear();
+            Console.WriteLine("Колода перемешана");
         }
 
         private static Deck ChooseDeck(List<Deck> decks)
         {
-           var position = 0;
-           var check = true;
-           var menu = new string[decks.Count];
-           for (var i = 0; i < decks.Count; i++)
-               menu[i] = i.ToString();
-           
-           while (check)
-           {
-               WriteMenu(menu, position);
+            var position = 0;
+            var check = true;
+            var menu = new string[decks.Count];
+            for (var i = 0; i < decks.Count; i++)
+                menu[i] = i.ToString();
 
-               var q = Console.ReadKey();
-               switch (q.Key)
-               {
-                   case ConsoleKey.UpArrow when position != 0:
-                       position--;
-                       break;
-                   case ConsoleKey.DownArrow when position != menu.Count() - 1:
-                       position++;
-                       break;
-                   case ConsoleKey.Enter:
-                       return decks[position];
-               }
-           }
-           return decks[0];
+            while (check)
+            {
+                WriteMenu(menu, position);
+
+                var q = Console.ReadKey();
+                switch (q.Key)
+                {
+                    case ConsoleKey.UpArrow when position != 0:
+                        position--;
+                        break;
+                    case ConsoleKey.DownArrow when position != menu.Count() - 1:
+                        position++;
+                        break;
+                    case ConsoleKey.Enter:
+                        return decks[position];
+                }
+            }
+            return decks[0];
         }
 
         private static void TrowDice(Board board)
@@ -164,35 +162,43 @@ namespace GameBoxConsole
 
         private static List<Dice> ChooseDices(List<Dice> dices)
         {
-           var isCorrectData = false;
-           string[] indexes = { };
-           while (!isCorrectData)
-           {
-               Console.WriteLine("Доступные кубики:\n");
-               for (var i = 0; i < dices.Count; i++)
-                   Console.WriteLine(dices[i] + i.ToString());
-               Console.WriteLine("Введите номера кубиков через пробел, которые надо бросить:\n");
-               indexes = Console.ReadLine()?.Split(' ');
-               isCorrectData = CheckData(indexes, dices.Count);
-               Console.Clear();
+            var isCorrectData = false;
+            string[] indexes = { };
+            while (!isCorrectData)
+            {
+                Console.WriteLine("Доступные кубики:\n");
+                for (var i = 0; i < dices.Count; i++)
+                    Console.WriteLine(dices[i] + i.ToString());
+                Console.WriteLine("Введите номера кубиков через пробел, которые надо бросить:\n");
+                var checkCorrectData = true;
+                while (checkCorrectData)
+                {
+                    try
+                    {
+                        indexes = Console.ReadLine()?.Split(' ');
+                        isCorrectData = CheckData(indexes, dices.Count);
+                        checkCorrectData = false;
+                    }
+                    catch
+                    {
+                        Console.WriteLine("Неверные данные. Попробуйте еще:");
+                    }
+                }
+                Console.Clear();
+            }
 
-                if (!isCorrectData)
-                   Console.WriteLine("Неверный формат. Попробуй ещё.");
-           }
-
-           return (indexes ?? Array.Empty<string>()).Select(index => dices[Convert.ToInt32(index)]).ToList();
+            return (indexes ?? Array.Empty<string>()).Select(index => dices[Convert.ToInt32(index)]).ToList();
         }
 
         private static bool CheckData(string[] indexes, int dicesCount)
         {
-           return indexes.All(index => Convert.ToInt32(index) < dicesCount);
+            return indexes.All(index => Convert.ToInt32(index) < dicesCount);
         }
 
         private delegate void GameActions(Board board);
 
         public static void TakeCard(Board board)
         {
-            var deckCount = board.GetItems<Deck>().Count;
             Console.Clear();
             Console.WriteLine("Откуда вы хотите взять карту?");
             Thread.Sleep(1000);
@@ -242,16 +248,28 @@ namespace GameBoxConsole
 
             var card = ChooseCard(cards);
             Actions.TakeCardAtArmFromBoard(board, card);
+            Console.Clear();
+            Console.WriteLine("Вы взяли карту со стола");
         }
 
         private static Card ChooseCard(List<Card> cards)
         {
             Console.Clear();
             Console.WriteLine("Выберите карту по индексу");
-            for(var i = 0;i <cards.Count;i++)
+            for (var i = 0; i < cards.Count; i++)
                 Console.WriteLine(cards[i].ToString() + i);
-            var index = Convert.ToInt32(Console.ReadLine());
-            return cards[index];
+            while (true)
+            {
+                try
+                {
+                    var index = Convert.ToInt32(Console.ReadLine());
+                    return cards[index];
+                }
+                catch
+                {
+                    Console.WriteLine("Неверные данные. Попробуйте еще:");
+                }
+            }
         }
 
         public static void TakeCardFromDeck(Board board)
@@ -265,6 +283,7 @@ namespace GameBoxConsole
             }
 
             Actions.TakeCardAtArmFromDeck(deck, board.CurrentArm);
+            Console.Clear();
             Console.WriteLine($"Вы взяли карту из колоды\n");
         }
 
@@ -308,8 +327,18 @@ namespace GameBoxConsole
                             case 1://"В колоду."
                                 var deck = ChooseDeck(board.GetItems<Deck>());
                                 Console.WriteLine($"В начало, конец или середину?(число от 0 до {deck.Cards.Count})");
-                                var index = Convert.ToInt32(Console.ReadLine());
-                                Actions.PutCardAtDeckFromArm(board.CurrentArm, deck, card, index);
+                                var checkTest = true;
+                                while (checkTest)
+                                    try
+                                    {
+                                        var index = Convert.ToInt32(Console.ReadLine());
+                                        Actions.PutCardAtDeckFromArm(board.CurrentArm, deck, card, index);
+                                        checkTest = false;
+                                    }
+                                    catch
+                                    {
+                                        Console.WriteLine("Неверные данные. Попробуйте еще:\n");
+                                    }
                                 Console.WriteLine("Вы положили карту в колоду\n");
                                 break;
                         }
@@ -420,8 +449,13 @@ namespace GameBoxConsole
 
         public static void PrintItemsDescriptions<T>(List<T> items) where T : Item
         {
-            for(var i = 0; i < items.Count; i++)
-                Console.WriteLine(items[i].ToString() + i);
+            foreach (var i in GetItemDescription(items))
+                Console.WriteLine(i);
+        }
+        public static List<string> GetItemDescription<T>(List<T> items) where T : Item
+        {
+            var firstId = items[0].Id;
+            return items.Select(item => item.ToString() + (item.Id - firstId).ToString()).ToList();
         }
 
         private static Board CreateBoard()
@@ -451,6 +485,8 @@ namespace GameBoxConsole
             board.CurrentArm = board.GetItems<Arm>()[0];
             return board;
         }
+
+
 
         private static void SetParameters(ref int armCount, ref int deckCount, ref int diceCount)
         {

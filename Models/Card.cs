@@ -15,11 +15,6 @@ namespace GameBox.Models
             Suit = suit;
             Rank = rank;
         }
-        public void MoveToIndex(Deck deck, int index)
-        {
-            deck.Cards.Remove(this);
-            deck.Cards.Insert(index, this);
-        }
 
         public override string ToString()
         {
