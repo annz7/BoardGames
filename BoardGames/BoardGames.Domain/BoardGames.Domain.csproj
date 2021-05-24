@@ -5,6 +5,10 @@
     </PropertyGroup>
 
     <ItemGroup>
+      <PackageReference Include="Microsoft.EntityFrameworkCore.InMemory" Version="5.0.6" />
+    </ItemGroup>
+
+    <ItemGroup>
       <ProjectReference Include="..\BoardGames.Infrastructure\BoardGames.Infrastructure.csproj" />
     </ItemGroup>
 

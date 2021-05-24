@@ -1,40 +1,39 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.ComponentModel.DataAnnotations;
 using System.Linq;
+using Microsoft.EntityFrameworkCore;
 
 namespace BoardGames.Domain.Models
 {
 	public class BoardGame
 	{
-		public BoardGameId Id { get; }
-		public int Width { get; set; }
+        [Key]
+        public Guid Id { get; set; } //BoardGameId
+        public int Width { get; set; }
         public int Height { get; set; }
-        public List<List<BoardGameItem>> Items { get; }
+        public List<BoardGameItem> Items { get; set; }
         public BoardGame(int width = 8, int height = 8)
         {
-            Id = new BoardGameId
-            {
-                Id = Guid.Empty
-            };
+            Id = Guid.Empty;
 
             Width = width;
             Height = height;
 
-            for (var i = 0; i < width; i++)
-                Items.Add(new List<BoardGameItem>(height));
+            Items = new List<BoardGameItem>(width * height);
         }
 
 		public void AddItem(BoardGameItemPosition position, BoardGameItem item)
         {
             if (IsPositionAvailable(position))
                 throw new Exception("позиция недоступна");
-            Items[position.X][position.Y] = item;
+            Items[position.X + Width * position.Y] = item;
         }
 		
-		public BoardGameItem RemoveItem(BoardGameItemPosition position) // может стоит просто передовать BoardGameItem?
+		public BoardGameItem RemoveItem(BoardGameItemPosition position) 
         {
-            var item = Items[position.X][position.Y];
-            Items[position.X][position.Y] = null;
+            var item = Items[position.X + Width * position.Y];
+            Items[position.X + Width * position.Y] = null;
             return item;
         }
 
@@ -51,7 +50,7 @@ namespace BoardGames.Domain.Models
         {
             return position.X >= 0 && position.X < Width
                     && position.Y >= 0 && position.Y < Height
-                    && Items[position.X][position.Y] == null;
+                    && Items[position.X + Width * position.Y] == null;
         }
 
     }

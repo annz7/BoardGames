@@ -1,94 +1,124 @@
 ﻿using System;
 using System.Collections.Generic;
-using BoardGames.Domain.Models;
-using BoardGames.Domain.Repositories;
+using System.Linq;
+using System.Threading.Tasks;
+using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
-using Microsoft.Extensions.Logging;
+using Microsoft.EntityFrameworkCore;
+using BoardGames.Domain.Models;
 
 namespace BoardGames.Api.Controllers
 {
-	[ApiController]
-	[Route("[controller]")]
-	public class BoardGamesController : ControllerBase
-	{
-		private readonly ILogger<BoardGamesController> _logger;
-		private readonly BoardGameRepository _boardGameRepository;
+    [Route("[controller]")]
+    [ApiController]
+    public class BoardGamesController : ControllerBase
+    {
+        private readonly BoardGameContext _context;
 
-		public BoardGamesController(ILogger<BoardGamesController> logger, BoardGameRepository boardGameRepository)
-		{
-			_logger = logger;
-			_boardGameRepository = boardGameRepository;
-		}
-
-		[HttpGet]
-		public IEnumerable<BoardGame> Get()
+        public BoardGamesController(BoardGameContext context)
         {
-            return _boardGameRepository.FindAll();
+            _context = context;
         }
 
+        // GET: BoardGames
         [HttpGet]
-        [Route("{id}")]
-        public BoardGame Get(BoardGameId id)
+        public async Task<ActionResult<IEnumerable<BoardGame>>> GetBoardGames()
         {
-            return _boardGameRepository.Find(id);
+            return await _context.BoardGames.ToListAsync();
         }
 
-        [HttpPost]
-        public BoardGame Create()
+        // GET: BoardGames/5
+        [HttpGet("{id}")]
+        public async Task<ActionResult<BoardGame>> GetBoardGame(Guid id)
         {
-            var boardGame = new BoardGame();
+            var boardGame = await _context.BoardGames.FindAsync(id);
 
-            _boardGameRepository.Save(boardGame.Id, boardGame);
+            if (boardGame == null)
+            {
+                return NotFound();
+            }
 
             return boardGame;
         }
 
-        [HttpPost]
-        public BoardGame Create(int weight, int height)
-        {
-            var boardGame = new BoardGame(weight, height);
+        // POST: BoardGames
+        //[HttpPost]
+        //public async Task<ActionResult<BoardGame>> PostBoardGame()
+        //{
+        //    var boardGame = new BoardGame()
+        //    {
+        //        Id = Guid.NewGuid()
+        //    };
 
-            _boardGameRepository.Save(boardGame.Id, boardGame);
+        //    _context.BoardGames.Add(boardGame);
+        //    await _context.SaveChangesAsync();
+
+        //    return CreatedAtAction("GetBoardGame", new { id = boardGame.Id }, boardGame);
+        //}
+
+        [HttpPost] // так работает
+        public async Task<BoardGame> PostBoardGame(int width = 8, int height = 8)
+        {
+            var boardGame = new BoardGame(width, height)
+            {
+                Id = Guid.NewGuid()
+            };
+
+            _context.BoardGames.Add(boardGame);
+            await _context.SaveChangesAsync();
 
             return boardGame;
         }
 
-        [HttpPost]
-        [Route("{id}/items")]
-        public BoardGame CreateItem(BoardGameId id, BoardGameItem item)
+        // PUT: BoardGames/5
+        //[HttpPut("{id}")]
+        //public async Task<IActionResult> PutBoardGame(Guid id, BoardGame boardGame)
+        //{
+        //    if (id != boardGame.Id)
+        //    {
+        //        return BadRequest();
+        //    }
+
+        //    _context.Entry(boardGame).State = EntityState.Modified;
+
+        //    try
+        //    {
+        //        await _context.SaveChangesAsync();
+        //    }
+        //    catch (DbUpdateConcurrencyException)
+        //    {
+        //        if (!BoardGameExists(id))
+        //        {
+        //            return NotFound();
+        //        }
+        //        else
+        //        {
+        //            throw;
+        //        }
+        //    }
+
+        //    return NoContent();
+        //}
+
+        // DELETE: BoardGames/5
+        [HttpDelete("{id}")]
+        public async Task<ActionResult<BoardGame>> DeleteBoardGame(Guid id)
         {
-            var boardGame = _boardGameRepository.Find(id);
+            var boardGame = await _context.BoardGames.FindAsync(id);
+            if (boardGame == null)
+            {
+                return NotFound();
+            }
 
-            boardGame.AddItem(item.Position, item);
-
-            _boardGameRepository.Save(boardGame.Id, boardGame);
+            _context.BoardGames.Remove(boardGame);
+            await _context.SaveChangesAsync();
 
             return boardGame;
         }
 
-        [HttpDelete]
-        [Route("{id}/items/{position}")]
-        public BoardGame RemoveItem(BoardGameId id, BoardGameItemPosition position)
+        private bool BoardGameExists(Guid id)
         {
-            var boardGame = _boardGameRepository.Find(id);
-
-            boardGame.RemoveItem(position);
-
-            _boardGameRepository.Save(boardGame.Id, boardGame);
-
-            return boardGame;
-        }
-
-
-        [HttpDelete]
-        [Route("{id}")]
-        public void Remove(BoardGameId id)
-        {
-            var boardGame = _boardGameRepository.Find(id);
-
-            boardGame = null;
-
-            _boardGameRepository.Save(boardGame.Id, boardGame);
+            return _context.BoardGames.Any(e => e.Id == id);
         }
     }
 }
