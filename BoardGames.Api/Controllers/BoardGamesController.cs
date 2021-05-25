@@ -41,22 +41,7 @@ namespace BoardGames.Api.Controllers
             return boardGame;
         }
 
-        // POST: BoardGames
-        //[HttpPost]
-        //public async Task<ActionResult<BoardGame>> PostBoardGame()
-        //{
-        //    var boardGame = new BoardGame()
-        //    {
-        //        Id = Guid.NewGuid()
-        //    };
-
-        //    _context.BoardGames.Add(boardGame);
-        //    await _context.SaveChangesAsync();
-
-        //    return CreatedAtAction("GetBoardGame", new { id = boardGame.Id }, boardGame);
-        //}
-
-        [HttpPost] // так работает
+        [HttpPost]
         public async Task<BoardGame> PostBoardGame(int width = 8, int height = 8)
         {
             var boardGame = new BoardGame(width, height)
@@ -69,36 +54,6 @@ namespace BoardGames.Api.Controllers
 
             return boardGame;
         }
-
-        // PUT: BoardGames/5
-        //[HttpPut("{id}")]
-        //public async Task<IActionResult> PutBoardGame(Guid id, BoardGame boardGame)
-        //{
-        //    if (id != boardGame.Id)
-        //    {
-        //        return BadRequest();
-        //    }
-
-        //    _context.Entry(boardGame).State = EntityState.Modified;
-
-        //    try
-        //    {
-        //        await _context.SaveChangesAsync();
-        //    }
-        //    catch (DbUpdateConcurrencyException)
-        //    {
-        //        if (!BoardGameExists(id))
-        //        {
-        //            return NotFound();
-        //        }
-        //        else
-        //        {
-        //            throw;
-        //        }
-        //    }
-
-        //    return NoContent();
-        //}
 
         // DELETE: BoardGames/5
         [HttpDelete("{id}")]
@@ -122,3 +77,35 @@ namespace BoardGames.Api.Controllers
         }
     }
 }
+
+#region MaybeItsUseful
+// PUT: BoardGames/5
+//[HttpPut("{id}")]
+//public async Task<IActionResult> PutBoardGame(Guid id, BoardGame boardGame)
+//{
+//    if (id != boardGame.Id)
+//    {
+//        return BadRequest();
+//    }
+
+//    _context.Entry(boardGame).State = EntityState.Modified;
+
+//    try
+//    {
+//        await _context.SaveChangesAsync();
+//    }
+//    catch (DbUpdateConcurrencyException)
+//    {
+//        if (!BoardGameExists(id))
+//        {
+//            return NotFound();
+//        }
+//        else
+//        {
+//            throw;
+//        }
+//    }
+
+//    return NoContent();
+//}
+#endregion
