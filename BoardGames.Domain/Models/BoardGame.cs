@@ -1,39 +1,42 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.ComponentModel.DataAnnotations;
-using System.Linq;
-using Microsoft.EntityFrameworkCore;
 
 namespace BoardGames.Domain.Models
 {
 	public class BoardGame
 	{
-        [Key]
-        public Guid Id { get; set; } //BoardGameId
+        public Guid Id { get; set; } 
         public int Width { get; set; }
         public int Height { get; set; }
-        public List<BoardGameItem> Items { get; set; }
+        public IDictionary<BoardGameItemPosition, BoardGameItem> Items { get; set; }
         public BoardGame(int width = 8, int height = 8)
         {
-            Id = Guid.Empty;
+            Id = Guid.NewGuid();
 
             Width = width;
             Height = height;
 
-            Items = new List<BoardGameItem>(width * height);
+            Items = new Dictionary<BoardGameItemPosition, BoardGameItem>();
         }
 
-		public void AddItem(BoardGameItemPosition position, BoardGameItem item)
+        public BoardGameItem GetItem(BoardGameItemPosition position)
+        {
+            if (IsPositionInBoard(position))
+                throw new Exception("позиция за пределами доски");
+            return Items[position];
+        }
+
+        public void AddItem(BoardGameItemPosition position, BoardGameItem item)
         {
             if (IsPositionAvailable(position))
                 throw new Exception("позиция недоступна");
-            Items[position.X + Width * position.Y] = item;
+            Items[position] = item;
         }
 		
 		public BoardGameItem RemoveItem(BoardGameItemPosition position) 
         {
-            var item = Items[position.X + Width * position.Y];
-            Items[position.X + Width * position.Y] = null;
+            var item = Items[position];
+            Items[position] = new BoardGameItem();
             return item;
         }
 
@@ -48,10 +51,16 @@ namespace BoardGames.Domain.Models
 
         public bool IsPositionAvailable(BoardGameItemPosition position)
         {
-            return position.X >= 0 && position.X < Width
-                    && position.Y >= 0 && position.Y < Height
-                    && Items[position.X + Width * position.Y] == null;
+            return IsPositionInBoard(position)
+                    && Items.ContainsKey(position);
         }
 
+        public bool IsPositionInBoard(BoardGameItemPosition position)
+        {
+            return position.X >= 0 
+                   && position.X < Width
+                   && position.Y >= 0 
+                   && position.Y < Height;
+        }
     }
 }

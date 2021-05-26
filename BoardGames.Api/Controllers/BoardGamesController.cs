@@ -6,6 +6,7 @@ using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using BoardGames.Domain.Models;
+using BoardGames.Domain.Repositories;
 
 namespace BoardGames.Api.Controllers
 {
@@ -13,47 +14,96 @@ namespace BoardGames.Api.Controllers
     [ApiController]
     public class BoardGamesController : ControllerBase
     {
-        private readonly BoardGameContext _context;
+        private readonly IBoardGameRepository repository;
 
-        public BoardGamesController(BoardGameContext context)
+        public BoardGamesController(IBoardGameRepository repository)
         {
-            _context = context;
+            this.repository = repository;
         }
 
         // GET: BoardGames
         [HttpGet]
-        public async Task<ActionResult<IEnumerable<BoardGame>>> GetBoardGames()
+        public IEnumerable<BoardGame> GetBoardGames()
         {
-            return await _context.BoardGames.ToListAsync();
+            return repository.GetAll();
         }
 
         // GET: BoardGames/5
         [HttpGet("{id}")]
-        public async Task<ActionResult<BoardGame>> GetBoardGame(Guid id)
+        public BoardGame GetBoardGame(Guid id)
+        {
+            var boardGame = await _context.BoardGames.FindAsync(id);
+
+            return boardGame;
+        }
+
+        [HttpGet("{id}/items")]
+        public async Task<ActionResult<IEnumerable<BoardGameItem>>> GetItems(Guid id)
         {
             var boardGame = await _context.BoardGames.FindAsync(id);
 
             if (boardGame == null)
-            {
                 return NotFound();
-            }
-
-            return boardGame;
+            
+            return boardGame.Items;
         }
 
         [HttpPost]
-        public async Task<BoardGame> PostBoardGame(int width = 8, int height = 8)
+        public async Task<ActionResult<BoardGame>> PostBoardGame(int width = 8, int height = 8)
         {
-            var boardGame = new BoardGame(width, height)
-            {
-                Id = Guid.NewGuid()
-            };
+            var boardGame = new BoardGame(width, height);
 
-            _context.BoardGames.Add(boardGame);
+            await _context.BoardGames.AddAsync(boardGame);
             await _context.SaveChangesAsync();
 
             return boardGame;
         }
+
+        [HttpGet("{id}/items/{position}")]
+        public async Task<ActionResult<BoardGameItem>> GetItems(Guid id, BoardGameItemPosition position)
+        {
+            var boardGame = await _context.BoardGames.FindAsync(id);
+
+            if (boardGame == null)
+                return NotFound();
+
+            return boardGame.GetItem(position);
+        }
+
+        //[HttpPost("{id}/items/add")]
+        //public async Task<ActionResult<BoardGame>> AddItem(Guid id, [FromBody]BoardGameItem item)
+        //{
+        //    var boardGame = await _context.BoardGames.FindAsync(id);
+
+        //    if (boardGame == null)
+        //        return NotFound();
+        //    _context.BoardGames.Remove(boardGame);
+
+        //    boardGame.AddItem(item.Position, item);
+
+        //    await _context.BoardGames.AddAsync(boardGame);
+        //    await _context.SaveChangesAsync();
+
+        //    return boardGame;
+        //}
+
+        //[HttpPost("{id}/items/move")]
+        //public async Task<ActionResult<BoardGame>> MoveItem(Guid id, 
+        //    BoardGameItemPosition oldPosition, BoardGameItemPosition newPosition)
+        //{
+        //    var boardGame = await _context.BoardGames.FindAsync(id);
+
+        //    if (boardGame == null)
+        //        return NotFound();
+        //    _context.BoardGames.Remove(boardGame);
+
+        //    boardGame.InteractItem(oldPosition, newPosition);
+
+        //    await _context.BoardGames.AddAsync(boardGame);
+        //    await _context.SaveChangesAsync();
+
+        //    return boardGame;
+        //}
 
         // DELETE: BoardGames/5
         [HttpDelete("{id}")]
@@ -70,6 +120,26 @@ namespace BoardGames.Api.Controllers
 
             return boardGame;
         }
+
+        //[HttpDelete("{id}/items")]
+        //public async Task<ActionResult<BoardGame>> DeleteItem(Guid id, BoardGameItemPosition position)
+        //{
+        //    var boardGame = await _context.BoardGames.FindAsync(id);
+        //    if (boardGame == null)
+        //        return NotFound();
+
+        //    _context.BoardGames.Remove(boardGame);
+
+        //    if (!boardGame.IsPositionInBoard(position))
+        //        return BadRequest();
+
+        //    boardGame.RemoveItem(position);
+
+        //    await _context.BoardGames.AddAsync(boardGame);
+        //    await _context.SaveChangesAsync();
+
+        //    return boardGame;
+        //}
 
         private bool BoardGameExists(Guid id)
         {
