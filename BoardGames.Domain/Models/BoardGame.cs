@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Linq;
 
 namespace BoardGames.Domain.Models
 {
@@ -8,7 +9,7 @@ namespace BoardGames.Domain.Models
         public Guid Id { get; set; } 
         public int Width { get; set; }
         public int Height { get; set; }
-        public IDictionary<BoardGameItemPosition, BoardGameItem> Items { get; set; }
+        private IDictionary<BoardGameItemPosition, BoardGameItem> Items { get; set; }
         public BoardGame(int width = 8, int height = 8)
         {
             Id = Guid.NewGuid();
@@ -17,6 +18,11 @@ namespace BoardGames.Domain.Models
             Height = height;
 
             Items = new Dictionary<BoardGameItemPosition, BoardGameItem>();
+        }
+
+        public IEnumerable<BoardGameItem> GetItems()
+        {
+            return Items.Select(item => item.Value);
         }
 
         public BoardGameItem GetItem(BoardGameItemPosition position)

@@ -54,7 +54,14 @@ namespace BoardGames.Domain.Repositories
 
         public void Remove(BoardGame boardGame)
         {
-            _context.BoardGames.Remove(Build(boardGame));
+            var boardGameDbo = Build(boardGame);
+            _context.BoardGames.Remove(boardGameDbo);
+
+            var items = _context.BoardGameItems
+                .Where(y => y.BoardGameId == boardGameDbo.Id)
+                .ToList();
+            _context.BoardGameItems.RemoveRange(items);
+
             _context.SaveChangesAsync();
         }
 
@@ -79,7 +86,7 @@ namespace BoardGames.Domain.Repositories
 
         private static IEnumerable<BoardGameItemDbo> BuildItems(BoardGame boardGame)
         {
-            return boardGame.Items.Select(item => BuildItem(item.Value, boardGame.Id));
+            return boardGame.GetItems().Select(item => BuildItem(item, boardGame.Id));
         }
 
         private static BoardGameItemDbo BuildItem(BoardGameItem item, Guid boardGameId)

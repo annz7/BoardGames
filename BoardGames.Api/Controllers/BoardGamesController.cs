@@ -36,8 +36,8 @@ namespace BoardGames.Api.Controllers
         {
             var boardGame = repository.Get(id);
 
-            foreach (var item in boardGame.Items)
-                yield return item.Value;
+            foreach (var item in boardGame.GetItems())
+                yield return item;
         }
 
         [HttpGet("{id}/items/{position}")]
