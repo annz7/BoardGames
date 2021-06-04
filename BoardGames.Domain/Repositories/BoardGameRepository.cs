@@ -49,12 +49,12 @@ namespace BoardGames.Domain.Repositories
         {
             _context.BoardGames.Add(Build(boardGame));
             _context.BoardGameItems.AddRange(BuildItems(boardGame));
-            _context.SaveChangesAsync();
+            _context.SaveChanges();
         }
 
         public void Remove(BoardGame boardGame)
         {
-            var boardGameDbo = Build(boardGame);
+            var boardGameDbo = _context.BoardGames.Find(boardGame.Id);
             _context.BoardGames.Remove(boardGameDbo);
 
             var items = _context.BoardGameItems
@@ -62,7 +62,7 @@ namespace BoardGames.Domain.Repositories
                 .ToList();
             _context.BoardGameItems.RemoveRange(items);
 
-            _context.SaveChangesAsync();
+            _context.SaveChanges();
         }
 
         public void Update(BoardGame newBoardGame)
@@ -86,7 +86,7 @@ namespace BoardGames.Domain.Repositories
 
         private static IEnumerable<BoardGameItemDbo> BuildItems(BoardGame boardGame)
         {
-            return boardGame.GetItems().Select(item => BuildItem(item, boardGame.Id));
+            return boardGame.Items.Select(item => BuildItem(item, boardGame.Id));
         }
 
         private static BoardGameItemDbo BuildItem(BoardGameItem item, Guid boardGameId)
@@ -94,7 +94,9 @@ namespace BoardGames.Domain.Repositories
             return new BoardGameItemDbo()
             {
                 BoardGameId = boardGameId,
-                Position = item.Position
+                //Position = item.Position
+                PositionX = item.Position.X,
+                PositionY = item.Position.Y
             };
         }
 
@@ -115,7 +117,12 @@ namespace BoardGames.Domain.Repositories
 
         private static BoardGameItem BuildItem(BoardGameItemDbo itemDbo)
         {
-            return new BoardGameItem(itemDbo.Position);
+            return new BoardGameItem(
+                new BoardGameItemPosition()
+                {
+                    X = itemDbo.PositionX,
+                    Y = itemDbo.PositionY
+                });
         }
     }
 }

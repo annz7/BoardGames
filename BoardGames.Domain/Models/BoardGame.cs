@@ -9,7 +9,8 @@ namespace BoardGames.Domain.Models
         public Guid Id { get; set; } 
         public int Width { get; set; }
         public int Height { get; set; }
-        private IDictionary<BoardGameItemPosition, BoardGameItem> Items { get; set; }
+        public IEnumerable<BoardGameItem> Items => items.Values;
+        private readonly IDictionary<BoardGameItemPosition, BoardGameItem> items; 
         public BoardGame(int width = 8, int height = 8)
         {
             Id = Guid.NewGuid();
@@ -17,32 +18,27 @@ namespace BoardGames.Domain.Models
             Width = width;
             Height = height;
 
-            Items = new Dictionary<BoardGameItemPosition, BoardGameItem>();
-        }
-
-        public IEnumerable<BoardGameItem> GetItems()
-        {
-            return Items.Select(item => item.Value);
+            items = new Dictionary<BoardGameItemPosition, BoardGameItem>();
         }
 
         public BoardGameItem GetItem(BoardGameItemPosition position)
         {
             if (IsPositionInBoard(position))
                 throw new Exception("позиция за пределами доски");
-            return Items[position];
+            return items[position];
         }
 
         public void AddItem(BoardGameItem item)
         {
             if (IsPositionAvailable(item.Position))
                 throw new Exception("позиция недоступна");
-            Items[item.Position] = item;
+            items[item.Position] = item;
         }
 		
 		public BoardGameItem RemoveItem(BoardGameItemPosition position) 
         {
-            var item = Items[position];
-            Items[position] = new BoardGameItem(position);
+            var item = items[position];
+            items[position] = new BoardGameItem(position);
             return item;
         }
 
@@ -59,7 +55,7 @@ namespace BoardGames.Domain.Models
         public bool IsPositionAvailable(BoardGameItemPosition position)
         {
             return IsPositionInBoard(position)
-                    && Items.ContainsKey(position);
+                    && items.ContainsKey(position);
         }
 
         public bool IsPositionInBoard(BoardGameItemPosition position)

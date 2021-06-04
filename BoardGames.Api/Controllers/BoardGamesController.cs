@@ -36,7 +36,7 @@ namespace BoardGames.Api.Controllers
         {
             var boardGame = repository.Get(id);
 
-            foreach (var item in boardGame.GetItems())
+            foreach (var item in boardGame.Items)
                 yield return item;
         }
 
@@ -57,7 +57,7 @@ namespace BoardGames.Api.Controllers
         }
 
         [HttpPost("{id}/items/add")]
-        public BoardGame AddItem(Guid id, BoardGameItem item)
+        public BoardGame AddItem(Guid id, [FromBody] BoardGameItem item)
         {
             var boardGame = repository.Get(id);
 
@@ -68,14 +68,15 @@ namespace BoardGames.Api.Controllers
             return boardGame;
         }
 
-        [HttpPost("{id}/items/move")]
-        public BoardGame MoveItem(Guid id,
-            [FromQuery] BoardGameItemPosition oldPosition,
-            [FromQuery] BoardGameItemPosition newPosition)
+        [HttpPost("{id}/items/{oldPositionX}_{oldPositionY}/move")]
+        public BoardGame MoveItem([FromRoute] Guid id,
+            [FromRoute] int oldPositionX, 
+            [FromRoute] int oldPositionY,
+             [FromBody] BoardGameItemPosition newPosition)
         {
             var boardGame = repository.Get(id);
 
-            boardGame.InteractItem(oldPosition, newPosition);
+            boardGame.InteractItem(new BoardGameItemPosition() { X = oldPositionX, Y = oldPositionY }, newPosition);
 
             repository.Update(boardGame);
 
