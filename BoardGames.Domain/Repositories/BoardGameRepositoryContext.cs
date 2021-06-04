@@ -4,7 +4,7 @@ namespace BoardGames.Domain.Repositories
 {
     public class BoardGameRepositoryContext : DbContext
     {
-        public BoardGameRepositoryContext(DbContextOptions<Models.BoardGameContext> options)
+        public BoardGameRepositoryContext(DbContextOptions<BoardGameRepositoryContext> options)
             : base(options)
         {
         }

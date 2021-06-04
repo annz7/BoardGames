@@ -1,16 +1,17 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
-using System.Threading.Tasks;
 using BoardGames.Domain.Models;
 
 namespace BoardGames.Domain.Repositories
 {
     public interface IBoardGameRepository
     {
-        void Save(BoardGame boardGame);
-        BoardGame Find(Guid boardGameId);
         IEnumerable<BoardGame> GetAll();
+        BoardGame Get(Guid boardGameId);
+        void Remove(BoardGame boardGame);
+        void Add(BoardGame boardGame);
+        void Update(BoardGame boardGame);
     }
 
     public class BoardGameRepository : IBoardGameRepository
@@ -22,13 +23,20 @@ namespace BoardGames.Domain.Repositories
             _context = context;
         }
 
-        public void Save(BoardGame boardGame)
+        public IEnumerable<BoardGame> GetAll()
         {
-            _context.BoardGames.Add(Build(boardGame));
-            _context.BoardGameItems.AddRange(BuildItems(boardGame));
-            _context.SaveChangesAsync();
+            var boardGameDbos = _context.BoardGames.ToList();
+
+            foreach (var boardGameDbo in boardGameDbos)
+            {
+                var boardGameItemDbos = _context.BoardGameItems
+                    .Where(y => y.BoardGameId == boardGameDbo.Id)
+                    .ToList();
+                yield return Build(boardGameDbo, boardGameItemDbos);
+            }
         }
-        public BoardGame Find(Guid boardGameId)
+
+        public BoardGame Get(Guid boardGameId)
         {
             var boardGameDbo = _context.BoardGames.Find(boardGameId);
             var boardGameItemDbos = _context.BoardGameItems
@@ -36,24 +44,71 @@ namespace BoardGames.Domain.Repositories
                 .ToList();
             return Build(boardGameDbo, boardGameItemDbos);
         }
-        public IEnumerable<BoardGame> GetAll()
+
+        public void Add(BoardGame boardGame)
         {
-            throw new NotImplementedException();
+            _context.BoardGames.Add(Build(boardGame));
+            _context.BoardGameItems.AddRange(BuildItems(boardGame));
+            _context.SaveChangesAsync();
         }
 
+        public void Remove(BoardGame boardGame)
+        {
+            _context.BoardGames.Remove(Build(boardGame));
+            _context.SaveChangesAsync();
+        }
+
+        public void Update(BoardGame newBoardGame)
+        {
+            var oldBoardGame = Get(newBoardGame.Id);
+
+            Remove(oldBoardGame);
+
+            Add(newBoardGame);
+        }
+        
         private static BoardGameDbo Build(BoardGame boardGame)
         {
-            throw new NotImplementedException();
+            return new BoardGameDbo()
+            {
+                Id = boardGame.Id,
+                Height = boardGame.Height,
+                Width = boardGame.Width
+            };
         }
 
         private static IEnumerable<BoardGameItemDbo> BuildItems(BoardGame boardGame)
         {
-            throw new NotImplementedException();
+            return boardGame.Items.Select(item => BuildItem(item.Value, boardGame.Id));
         }
 
-        private BoardGame Build(BoardGameDbo boardGameDbo, IEnumerable<BoardGameItemDbo> itemsDbos)
+        private static BoardGameItemDbo BuildItem(BoardGameItem item, Guid boardGameId)
         {
-            throw new NotImplementedException();
+            return new BoardGameItemDbo()
+            {
+                BoardGameId = boardGameId,
+                Position = item.Position
+            };
+        }
+
+        private static BoardGame Build(BoardGameDbo boardGameDbo, IEnumerable<BoardGameItemDbo> itemsDbos)
+        {
+            var boardGame = new BoardGame()
+            {
+                Id = boardGameDbo.Id,
+                Height = boardGameDbo.Height,
+                Width = boardGameDbo.Width
+            };
+
+            foreach (var itemDbo in itemsDbos)
+                boardGame.AddItem(BuildItem(itemDbo));
+
+            return boardGame;
+        }
+
+        private static BoardGameItem BuildItem(BoardGameItemDbo itemDbo)
+        {
+            return new BoardGameItem(itemDbo.Position);
         }
     }
 }

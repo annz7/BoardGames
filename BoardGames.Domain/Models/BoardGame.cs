@@ -26,17 +26,17 @@ namespace BoardGames.Domain.Models
             return Items[position];
         }
 
-        public void AddItem(BoardGameItemPosition position, BoardGameItem item)
+        public void AddItem(BoardGameItem item)
         {
-            if (IsPositionAvailable(position))
+            if (IsPositionAvailable(item.Position))
                 throw new Exception("позиция недоступна");
-            Items[position] = item;
+            Items[item.Position] = item;
         }
 		
 		public BoardGameItem RemoveItem(BoardGameItemPosition position) 
         {
             var item = Items[position];
-            Items[position] = new BoardGameItem();
+            Items[position] = new BoardGameItem(position);
             return item;
         }
 
@@ -46,7 +46,8 @@ namespace BoardGames.Domain.Models
                 throw new Exception("позиция недоступна");
 
             var item = RemoveItem(oldPosition);
-            AddItem(newPosition, item);
+            item.Position = newPosition;
+            AddItem(item);
         }
 
         public bool IsPositionAvailable(BoardGameItemPosition position)
