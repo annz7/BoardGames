@@ -23,28 +23,32 @@ namespace BoardGames.Domain.Models
 
         public BoardGameItem GetItem(BoardGameItemPosition position)
         {
-            if (IsPositionInBoard(position))
+            if (!IsPositionInBoard(position))
                 throw new Exception("позиция за пределами доски");
             return items[position];
         }
 
         public void AddItem(BoardGameItem item)
         {
-            if (IsPositionAvailable(item.Position))
+            if (!IsPositionAvailable(item.Position))
                 throw new Exception("позиция недоступна");
             items[item.Position] = item;
         }
 		
-		public BoardGameItem RemoveItem(BoardGameItemPosition position) 
+		public BoardGameItem RemoveItem(BoardGameItemPosition position)
         {
+            var l = items.ContainsKey(position);
+            if (!IsPositionInBoard(position) || !items.ContainsKey(position))
+                throw new Exception("позиция не на доске или на ней нет предмета");
+
             var item = items[position];
-            items[position] = new BoardGameItem(position);
+            items.Remove(position);
             return item;
         }
 
         public void InteractItem(BoardGameItemPosition oldPosition, BoardGameItemPosition newPosition)
         {
-            if (IsPositionAvailable(newPosition))
+            if (!IsPositionAvailable(newPosition))
                 throw new Exception("позиция недоступна");
 
             var item = RemoveItem(oldPosition);
@@ -55,7 +59,7 @@ namespace BoardGames.Domain.Models
         public bool IsPositionAvailable(BoardGameItemPosition position)
         {
             return IsPositionInBoard(position)
-                    && items.ContainsKey(position);
+                    && !items.ContainsKey(position);
         }
 
         public bool IsPositionInBoard(BoardGameItemPosition position)

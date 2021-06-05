@@ -40,14 +40,17 @@ namespace BoardGames.Api.Controllers
                 yield return item;
         }
 
-        [HttpGet("{id}/items/{position}")]
-        public BoardGameItem GetItem(Guid id, BoardGameItemPosition position)
+        [HttpGet("{id}/items/{positionX}_{positionY}")]
+        public BoardGameItem GetItem(
+            [FromRoute] Guid id,
+            [FromRoute] int positionX,
+            [FromRoute] int positionY)
         {
-            return repository.Get(id).GetItem(position);
+            return repository.Get(id).GetItem(new BoardGameItemPosition() { X = positionX, Y = positionY });
         }
 
         [HttpPost]
-        public BoardGame PostBoardGame(int width = 8, int height = 8)
+        public BoardGame CreateBoardGame(int width = 8, int height = 8)
         {
             var boardGame = new BoardGame(width, height);
 
@@ -56,12 +59,15 @@ namespace BoardGames.Api.Controllers
             return boardGame;
         }
 
-        [HttpPost("{id}/items/add")]
-        public BoardGame AddItem(Guid id, [FromBody] BoardGameItem item)
+        [HttpPost("{id}/items/{positionX}_{positionY}/add")]
+        public BoardGame AddItem(
+            [FromRoute] Guid id, 
+            [FromRoute] int positionX,
+            [FromRoute] int positionY)
         {
             var boardGame = repository.Get(id);
 
-            boardGame.AddItem(item);
+            boardGame.AddItem(new BoardGameItem(new BoardGameItemPosition() { X = positionX, Y = positionY }));
 
             repository.Update(boardGame);
 
@@ -72,7 +78,7 @@ namespace BoardGames.Api.Controllers
         public BoardGame MoveItem([FromRoute] Guid id,
             [FromRoute] int oldPositionX, 
             [FromRoute] int oldPositionY,
-             [FromBody] BoardGameItemPosition newPosition)
+            [FromBody] BoardGameItemPosition newPosition)
         {
             var boardGame = repository.Get(id);
 
@@ -93,13 +99,14 @@ namespace BoardGames.Api.Controllers
             return boardGame;
         }
 
-        [HttpDelete("{id}/items")]
-        public async Task<ActionResult<BoardGame>> DeleteItem(Guid id, BoardGameItemPosition position)
+        [HttpDelete("{id}/items/{positionX}_{positionY}")]
+        public BoardGame DeleteItem(
+            [FromRoute] Guid id, 
+            [FromRoute] int positionX,
+            [FromRoute] int positionY)
         {
+            var position = new BoardGameItemPosition() { X = positionX, Y = positionY };
             var boardGame = repository.Get(id);
-
-            if (!boardGame.IsPositionInBoard(position))
-                return BadRequest("Позиция за пределами доски");
 
             boardGame.RemoveItem(position);
 

@@ -52,6 +52,18 @@ namespace BoardGames.Domain.Repositories
             _context.SaveChanges();
         }
 
+        //public void Add(BoardGame boardGame)
+        //{
+        //    //_context.BoardGames.Add(Build(boardGame));
+        //    var boardGameDbo = _context.BoardGames.Find(boardGame.Id);
+        //    _context.BoardGames.Add(boardGameDbo);
+        //    var items = _context.BoardGameItems
+        //        .Where(y => y.BoardGameId == boardGameDbo.Id)
+        //        .ToList();
+        //    _context.BoardGameItems.AddRange(items);//BuildItems(boardGame));
+        //    _context.SaveChanges();
+        //}
+
         public void Remove(BoardGame boardGame)
         {
             var boardGameDbo = _context.BoardGames.Find(boardGame.Id);
@@ -67,9 +79,15 @@ namespace BoardGames.Domain.Repositories
 
         public void Update(BoardGame newBoardGame)
         {
-            var oldBoardGame = Get(newBoardGame.Id);
+            var oldBoardGameDbo = _context.BoardGames.Find(newBoardGame.Id);
+            _context.BoardGames.Remove(oldBoardGameDbo);
 
-            Remove(oldBoardGame);
+            var items = _context.BoardGameItems
+                .Where(y => y.BoardGameId == oldBoardGameDbo.Id)
+                .ToList();
+            _context.BoardGameItems.RemoveRange(items);
+
+            _context.SaveChanges();
 
             Add(newBoardGame);
         }

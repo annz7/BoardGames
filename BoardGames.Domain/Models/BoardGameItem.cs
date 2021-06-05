@@ -8,8 +8,7 @@
 
         public BoardGameItem(BoardGameItemPosition position)
         {
-            Position.X = position.X;
-            Position.Y = position.Y;
+            Position = position;
         }
     }
 }
